@@ -1,0 +1,9 @@
+Package: jp.r-plus.pullbulletin
+Name: PullBulletin
+Depends: mobilesubstrate, firmware (>= 8.0)
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Pull to clear all bulletin.
+Maintainer: r_plus
+Author: r_plus
+Section: Tweaks
