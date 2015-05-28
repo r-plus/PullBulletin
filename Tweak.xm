@@ -4,6 +4,9 @@
 
 // interfaces {{{
 @interface SBBulletinViewController : UIViewController
+
+@property(nonatomic, assign) id delegate;
+
 @end
 
 @interface SBNotificationCenterController
@@ -14,6 +17,7 @@
 @interface SBBulletinObserverViewController
 - (id)sectionWithIdentifier:(NSString *)identifier;
 - (void)clearSection:(id)section;
+- (BOOL)canShowPullToRefresh; //This should be added in the respective observer controllers which want to controll the PullBulletin.
 @end
 
 @interface SBIcon
@@ -68,7 +72,7 @@ static void SetPullView(UITableView *tableView, AASpringRefreshPosition position
 {
     %orig;
     // avoid SBWidgetHandlingBulletinViewController
-    if (![self isMemberOfClass:%c(SBBulletinViewController)]) {
+    if (![self isMemberOfClass:%c(SBBulletinViewController)] || ([[self delegate] respondsToSelector:@selector(canShowPullToRefresh)] && ![[self delegate] canShowPullToRefresh])) {
         return;
     }
     UITableView *tableView = (UITableView *)self.view;
