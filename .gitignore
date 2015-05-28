@@ -2,3 +2,5 @@
 theos
 .DS*
 _
+*.deb
+obj
