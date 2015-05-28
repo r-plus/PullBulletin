@@ -1,4 +1,3 @@
-#import <objc/runtime.h>
 #import <ColorLog.h>
 #import "../AASpringRefresh/AASpringRefresh/AASpringRefresh.h"
 
@@ -38,7 +37,7 @@
 // Inherited from https://github.com/autopear/Notification-Killer/blob/master/Tweak.mm#L118
 static void ClearAllBulletin()
 {
-    SBNotificationCenterController *self = [objc_getClass("SBNotificationCenterController") sharedInstance];
+    SBNotificationCenterController *self = [%c(SBNotificationCenterController) sharedInstance];
     SBBulletinObserverViewController *allCtrl = MSHookIvar<SBBulletinObserverViewController *>(self.viewController, "_allModeViewController");
 
     NSMutableArray *_visibleSectionIDs = MSHookIvar<NSMutableArray *>(allCtrl, "_visibleSectionIDs");
