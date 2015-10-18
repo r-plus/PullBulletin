@@ -1,6 +1,6 @@
 ARCHS = armv7 arm64
 TARGET = iphone:clang::8.0
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = PullBulletin
 PullBulletin_FILES = Tweak.xm
