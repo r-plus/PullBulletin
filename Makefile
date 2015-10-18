@@ -13,3 +13,6 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
 	install.exec "killall -9 SpringBoard"
+
+aa::
+	xcodebuild -project ../AASpringRefresh/AASpringRefreshDemo/AASpringRefreshDemo.xcodeproj -target libAASpringRefresh
