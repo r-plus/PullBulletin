@@ -8,12 +8,17 @@
 
 @end
 
+@interface SBNotificationCenterViewController
+@property(readonly, nonatomic) NSSet *visibleContentViewControllers;
+@end
+
 @interface SBNotificationCenterController
-@property(retain) UIViewController *viewController;
+@property(retain) SBNotificationCenterViewController *viewController;
 + (id)sharedInstance;
 @end
 
 @interface SBBulletinObserverViewController
+@property(readonly, nonatomic) NSArray *orderedSectionIDs;
 - (id)sectionWithIdentifier:(NSString *)identifier;
 - (void)clearSection:(id)section;
 - (BOOL)canShowPullToRefresh; //This should be added in the respective observer controllers which want to controll the PullBulletin.
@@ -37,11 +42,19 @@
 // Inherited from https://github.com/autopear/Notification-Killer/blob/master/Tweak.mm#L118
 static void ClearAllBulletin()
 {
+    NSArray *allSections;
+    SBBulletinObserverViewController *allCtrl;
     SBNotificationCenterController *self = [%c(SBNotificationCenterController) sharedInstance];
-    SBBulletinObserverViewController *allCtrl = MSHookIvar<SBBulletinObserverViewController *>(self.viewController, "_allModeViewController");
+    NSSet *s = self.viewController.visibleContentViewControllers;
+    // Set of SBBulletinObserverViewController subclass.
+    for (id vc in s) {
+        if ([vc isKindOfClass:%c(SBBulletinObserverViewController)]) {
+            allCtrl = vc;
+            allSections = allCtrl.orderedSectionIDs;
+            break;
+        }
+    }
 
-    NSMutableArray *_visibleSectionIDs = MSHookIvar<NSMutableArray *>(allCtrl, "_visibleSectionIDs");
-    NSArray *allSections = [NSArray arrayWithArray:_visibleSectionIDs];
     for (NSString *identifier in allSections) {
         id sectionInfo = [allCtrl sectionWithIdentifier:identifier];
         if (sectionInfo)
@@ -66,17 +79,27 @@ static void SetPullView(UITableView *tableView, AASpringRefreshPosition position
     pull.text = @"MarkAllasRead";
 }
 
-%hook SBBulletinViewController
+%group NCGroup
+%hook BulletinVC
 - (void)viewDidLoad
 {
     %orig;
-    // avoid SBWidgetHandlingBulletinViewController
-    if (![self isMemberOfClass:%c(SBBulletinViewController)] || ([[self delegate] respondsToSelector:@selector(canShowPullToRefresh)] && ![[self delegate] canShowPullToRefresh])) {
+    // iOS 8: SBWidgetHandlingBulletinViewController and SBBulletinViewController
+    // iOS 9: SBWidgetHandlingNCTableViewController and SBNCTableViewController
+    if ([self respondsToSelector:@selector(visibleWidgetIDs)] || ([[self delegate] respondsToSelector:@selector(canShowPullToRefresh)] && ![[self delegate] canShowPullToRefresh])) {
         return;
     }
-    UITableView *tableView = (UITableView *)self.view;
+    UITableView *tableView = (UITableView *)[(UIViewController *)self view];
 
     SetPullView(tableView, AASpringRefreshPositionTop);
     SetPullView(tableView, AASpringRefreshPositionBottom);
 }
 %end
+%end
+
+%ctor {
+    @autoreleasepool {
+        Class $BulletinVC = objc_getClass("SBNCTableViewController") ?: objc_getClass("SBBulletinViewController");
+        %init(NCGroup, BulletinVC = $BulletinVC);
+    }
+}
